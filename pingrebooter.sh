@@ -74,6 +74,9 @@ PINGDONOTREBOOTWITHINSECONDS=900
 # Turn the power off to the router for X seconds.
 POWEROFFSECONDS=10
 
+# Wait how many seconds for the router to reboot.
+ROUTERREBOOTSECONDS=60
+
 # Set the GPIO pin number which is connected to the relay.
 # @see https://medium.com/coinmonks/controlling-raspberry-pi-gpio-pins-from-bash-scripts-traffic-lights-7ea0057c6a90
 GPIOPIN=9
@@ -183,6 +186,10 @@ do
 
         # Turn back on...
         echo "0" > "/sys/class/gpio/gpio${GPIOPIN}/value"
+
+        # Sleep for 60 seconds while the router restarts...
+        echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..."
+        sleep "$ROUTERREBOOTSECONDS"
       fi
     fi
   fi
