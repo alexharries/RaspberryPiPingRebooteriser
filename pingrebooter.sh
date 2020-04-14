@@ -38,8 +38,10 @@
 #
 # Check if we're sudo; if not, no bueno, no go.
 #
-
-@TODO
+if [[ "$EUID" -ne 0 ]]; then
+  echo "Please run this script as root."
+  exit
+fi
 
 #
 # Set up our variabibbles.
