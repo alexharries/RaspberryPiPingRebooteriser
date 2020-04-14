@@ -147,31 +147,33 @@ do
 
     # Read /tmp/pingrebooter/failedpingcount.txt.
     FAILEDPINGCOUNT=`cat "$TEMPDIR/$FAILEDPINGCOUNTFILENAME"`
-    echo "FAILEDPINGCOUNT: $FAILEDPINGCOUNT"
 
     FAILEDPINGCOUNT=$((FAILEDPINGCOUNT + 1))
-    echo "FAILEDPINGCOUNT: $FAILEDPINGCOUNT"
+    echo "Failed ping count: $FAILEDPINGCOUNT"
 
     createfailedpingcountfile "$FAILEDPINGCOUNT"
 
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
     if (( "$FAILEDPINGCOUNT" > "$PINGFAILURECOUNTBEFOREREBOOT" )); then
-      echo "FAILEDPINGCOUNT ($FAILEDPINGCOUNT) > PINGFAILURECOUNTBEFOREREBOOT ($PINGFAILURECOUNTBEFOREREBOOT)"
+      echo "Failed ping count $FAILEDPINGCOUNT is greater than
+        the threshold of $PINGFAILURECOUNTBEFOREREBOOT -
+        rebooting if the last reboot wasn't within the last
+        $PINGDONOTREBOOTWITHINSECONDS seconds."
 
       # Read in $TEMPDIR/$LASTREBOOTTIMEFILENAME and subtract now timestamp from
       # the timestamp in that file.
       LASTREBOOTTIME=`cat "$TEMPDIR/$LASTREBOOTTIMEFILENAME"`
 
-      echo "LASTREBOOTTIME: $LASTREBOOTTIME"
+      echo "Last reboot timestamp: $LASTREBOOTTIME"
 
       getcurrenttimestamp
       LASTREBOOTSECONDSAGO=$((TIMESTAMP-LASTREBOOTTIME))
 
-      echo "LASTREBOOTSECONDSAGO: $LASTREBOOTSECONDSAGO"
+      echo "Last reboot: $LASTREBOOTSECONDSAGO seconds ago"
 
       if (( "$LASTREBOOTSECONDSAGO" > "$PINGDONOTREBOOTWITHINSECONDS" )); then
-        echo "Rebooting router..."
+        echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
 
         # Reset failed ping counter to 0.
         createfailedpingcountfile 0
@@ -180,11 +182,14 @@ do
         createlastrebootedfile
 
         # Do reboot. Turn relay off on pin $GPIOPIN.
+        echo "Router off..."
         echo "1" > "/sys/class/gpio/gpio${GPIOPIN}/value"
 
+        echo "Waiting $POWEROFFSECONDS..."
         sleep "$POWEROFFSECONDS"
 
         # Turn back on...
+        echo "Router on..."
         echo "0" > "/sys/class/gpio/gpio${GPIOPIN}/value"
 
         # Sleep for 60 seconds while the router restarts...
