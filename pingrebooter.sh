@@ -4,6 +4,8 @@
 # This script written for the Raspberry Pi resets a device when the internet
 # connection is lost for a period of time.
 #
+# You must run this script as sudo.
+#
 # It does the following:
 #
 # - Every six seconds, it pings www.google.co.uk
@@ -25,13 +27,19 @@
 #
 # - If the timestamp is greater than 15 minutes ago, reset
 #   /tmp/pingrebooter/failedpingcount.txt to 0, set
-#   /tmp/pingrebooter/lastreboottime.txt to now, turn off the relay for 20
+#   /tmp/pingrebooter/lastreboottime.txt to now, turn off the relay for X
 #   seconds, then turn it back on.
 #
 # - If the last reboot timestamp is LESS than 15 minutes ago, we don't want to
 #   reboot yet (because it's likely the last reboot didn't fix the issue; it
 #   might not be a problem that can be fixed by a reboot), so just increment
 #   /tmp/pingrebooter/failedpingcount.txt by 1 and continue.
+
+#
+# Check if we're sudo; if not, no bueno, no go.
+#
+
+@TODO
 
 #
 # Set up our variabibbles.
@@ -60,6 +68,13 @@ PINGFAILURECOUNTBEFOREREBOOT=10
 
 # Don't reboot within 900 seconds (15 minutes) of last reboot.
 PINGDONOTREBOOTWITHINSECONDS=900
+
+# Turn the power off to the router for X seconds.
+POWEROFFSECONDS=10
+
+# Set the GPIO pin number which is connected to the relay.
+# @see https://medium.com/coinmonks/controlling-raspberry-pi-gpio-pins-from-bash-scripts-traffic-lights-7ea0057c6a90
+GPIOPIN=9
 
 #
 # Functions.
@@ -159,8 +174,13 @@ do
         # Set last reboot timestamp to now.
         createlastrebootedfile
 
-        # Do reboot.
-        ./pingrebooter-doreboot.sh
+        # Do reboot. Turn relay off on pin $GPIOPIN.
+        echo "1" > "/sys/class/gpio/gpio${GPIOPIN}/value"
+
+        sleep "$POWEROFFSECONDS"
+
+        # Turn back on...
+        echo "0" > "/sys/class/gpio/gpio${GPIOPIN}/value"
       fi
     fi
   fi
