@@ -133,7 +133,11 @@ fi
 
 while true
 do
-  echo "ping -c 1 $DOMAINTOPING -t $PINGMAXIMUMSECONDS -v:"
+  # Get date-time.
+  DATETIME=`date +"%Y-%m-%d %H:%M:%S"`
+
+  echo "
+$DATETIME: ping -c 1 $DOMAINTOPING -t $PINGMAXIMUMSECONDS -v:"
 
   if ping -c 1 "$DOMAINTOPING" -t 10 -v &> /dev/null
   then
@@ -143,34 +147,34 @@ do
     echo "0" > "$TEMPDIR/$FAILEDPINGCOUNTFILENAME"
 
   else
-    echo "Not ok"
-
     # Read /tmp/pingrebooter/failedpingcount.txt.
     FAILEDPINGCOUNT=`cat "$TEMPDIR/$FAILEDPINGCOUNTFILENAME"`
 
     FAILEDPINGCOUNT=$((FAILEDPINGCOUNT + 1))
-    echo "Failed ping count: $FAILEDPINGCOUNT"
+
+    echo "\
+********************************
+Not ok: Failed ping count: $FAILEDPINGCOUNT
+********************************"
 
     createfailedpingcountfile "$FAILEDPINGCOUNT"
 
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
-    if (( "$FAILEDPINGCOUNT" > "$PINGFAILURECOUNTBEFOREREBOOT" )); then
-      echo "Failed ping count $FAILEDPINGCOUNT is greater than
-        the threshold of $PINGFAILURECOUNTBEFOREREBOOT -
-        rebooting if the last reboot wasn't within the last
-        $PINGDONOTREBOOTWITHINSECONDS seconds."
+    if (( "$FAILEDPINGCOUNT" >= "$PINGFAILURECOUNTBEFOREREBOOT" )); then
+      echo "Failed ping count $FAILEDPINGCOUNT is greater than \
+the threshold of $PINGFAILURECOUNTBEFOREREBOOT - \
+rebooting if the last reboot wasn't within the last \
+$PINGDONOTREBOOTWITHINSECONDS seconds."
 
       # Read in $TEMPDIR/$LASTREBOOTTIMEFILENAME and subtract now timestamp from
       # the timestamp in that file.
       LASTREBOOTTIME=`cat "$TEMPDIR/$LASTREBOOTTIMEFILENAME"`
 
-      echo "Last reboot timestamp: $LASTREBOOTTIME"
-
       getcurrenttimestamp
       LASTREBOOTSECONDSAGO=$((TIMESTAMP-LASTREBOOTTIME))
 
-      echo "Last reboot: $LASTREBOOTSECONDSAGO seconds ago"
+      echo "Last reboot timestamp: $LASTREBOOTTIME - $LASTREBOOTSECONDSAGO seconds ago"
 
       if (( "$LASTREBOOTSECONDSAGO" > "$PINGDONOTREBOOTWITHINSECONDS" )); then
         echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
