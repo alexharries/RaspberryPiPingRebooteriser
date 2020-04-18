@@ -98,6 +98,9 @@ createfailedpingcountfile() {
 # Create the last rebooted file.
 createlastrebootedfile() {
   getcurrenttimestamp
+  # Set last reboot time to the interval seconds ago so we can reboot
+  # immediately if needed.
+  TIMESTAMP=$((TIMESTAMP - PINGDONOTREBOOTWITHINSECONDS))
   echo "$TIMESTAMP" > "$TEMPDIR/$LASTREBOOTTIMEFILENAME"
 }
 
