@@ -189,7 +189,7 @@ do
         echo "1" > "/sys/class/gpio/gpio${GPIOPIN}/value"
 
         echo "Waiting $POWEROFFSECONDS..."
-        sleep "$POWEROFFSECONDS"
+        sleep "${POWEROFFSECONDS}-1"
 
         # Beep twice.
         tput bel
