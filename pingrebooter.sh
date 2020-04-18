@@ -63,7 +63,7 @@ DOMAINTOPING="www.google.co.uk"
 PINGINTERVALSECONDS=6
 
 # How long should we wait before we assume a ping is considered "dead".
-PINGMAXIMUMSECONDS=10
+PINGMAXIMUMSECONDS="$PINGINTERVALSECONDS"
 
 # 10 ping failues before reboot.
 PINGFAILURECOUNTBEFOREREBOOT=10
@@ -181,12 +181,20 @@ do
         # Set last reboot timestamp to now.
         createlastrebootedfile
 
+        # Beep once.
+        tput bel
+
         # Do reboot. Turn relay off on pin $GPIOPIN.
         echo "Router off..."
         echo "1" > "/sys/class/gpio/gpio${GPIOPIN}/value"
 
         echo "Waiting $POWEROFFSECONDS..."
         sleep "$POWEROFFSECONDS"
+
+        # Beep twice.
+        tput bel
+        sleep 1
+        tput bel
 
         # Turn back on...
         echo "Router on..."
