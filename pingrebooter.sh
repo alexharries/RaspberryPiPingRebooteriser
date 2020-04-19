@@ -157,7 +157,11 @@ $DATETIME: ping -c 1 $DOMAINTOPING -t $PINGMAXIMUMSECONDS -v:"
 
     echo "\
 ********************************
+********************************
+********************************
 Not ok: Failed ping count: $FAILEDPINGCOUNT
+********************************
+********************************
 ********************************"
 
     createfailedpingcountfile "$FAILEDPINGCOUNT"
