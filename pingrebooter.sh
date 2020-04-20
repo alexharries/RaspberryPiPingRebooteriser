@@ -206,7 +206,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
         python "$SCRIPTPATH/power_off.py"
 
         echo "Waiting $POWEROFFSECONDS..."
-        sleep "${POWEROFFSECONDS}-1"
+        sleep $((POWEROFFSECONDS - 1))
 
         # Beep twice.
         tput bel
