@@ -57,7 +57,7 @@ FAILEDPINGCOUNTFILENAME="failedpingcount.txt"
 LASTREBOOTTIMEFILENAME="lastreboottime.txt"
 
 # A reliable domain which we will ping.
-DOMAINTOPING="www.google.co.uk"
+DOMAINTOPING="8.8.8.8"
 
 # How frequently should we send pings.
 PINGINTERVALSECONDS=6
