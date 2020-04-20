@@ -197,7 +197,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Do reboot. Turn relay off on pin $GPIOPIN.
         echo "Router off..."
-        echo "1" > "/sys/class/gpio/gpio${GPIOPIN}/value"
+        python power_off.py
 
         echo "Waiting $POWEROFFSECONDS..."
         sleep "${POWEROFFSECONDS}-1"
@@ -209,7 +209,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Turn back on...
         echo "Router on..."
-        echo "0" > "/sys/class/gpio/gpio${GPIOPIN}/value"
+        python power_on.py
 
         # Sleep for 60 seconds while the router restarts...
         echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..."
