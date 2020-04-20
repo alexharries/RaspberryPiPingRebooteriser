@@ -146,9 +146,9 @@ do
   DATETIME=`date +"%Y-%m-%d %H:%M:%S"`
 
   echo "
-$DATETIME: ping -c 1 $DOMAINTOPING -t $PINGMAXIMUMSECONDS -v:"
+$DATETIME: ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v:"
 
-  if ping -c 1 "$DOMAINTOPING" -t 10 -v &> /dev/null
+  if ping -c 1 "$DOMAINTOPING" -W $PINGMAXIMUMSECONDS -v &> /dev/null
   then
     echo "OK"
 
