@@ -81,6 +81,12 @@ ROUTERREBOOTSECONDS=60
 # @see https://medium.com/coinmonks/controlling-raspberry-pi-gpio-pins-from-bash-scripts-traffic-lights-7ea0057c6a90
 GPIOPIN=9
 
+# Get the path to the script.
+SCRIPT=`realpath $0`
+SCRIPTPATH=`dirname $SCRIPT`
+
+python "$SCRIPTPATH/power_on.py"
+
 #
 # Functions.
 #
@@ -197,7 +203,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Do reboot. Turn relay off on pin $GPIOPIN.
         echo "Router off..."
-        python power_off.py
+        python "$SCRIPTPATH/power_off.py"
 
         echo "Waiting $POWEROFFSECONDS..."
         sleep "${POWEROFFSECONDS}-1"
@@ -209,7 +215,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Turn back on...
         echo "Router on..."
-        python power_on.py
+        python "$SCRIPTPATH/power_on.py"
 
         # Sleep for 60 seconds while the router restarts...
         echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..."
