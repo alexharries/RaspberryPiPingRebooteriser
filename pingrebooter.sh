@@ -57,7 +57,7 @@ FAILEDPINGCOUNTFILENAME="failedpingcount.txt"
 LASTREBOOTTIMEFILENAME="lastreboottime.txt"
 
 # A reliable domain which we will ping.
-DOMAINTOPING="www.google.co.uk"
+DOMAINTOPING="8.8.8.8"
 
 # How frequently should we send pings.
 PINGINTERVALSECONDS=6
@@ -80,6 +80,12 @@ ROUTERREBOOTSECONDS=60
 # Set the GPIO pin number which is connected to the relay.
 # @see https://medium.com/coinmonks/controlling-raspberry-pi-gpio-pins-from-bash-scripts-traffic-lights-7ea0057c6a90
 GPIOPIN=9
+
+# Get the path to the script.
+SCRIPT=`realpath $0`
+SCRIPTPATH=`dirname $SCRIPT`
+
+python "$SCRIPTPATH/power_on.py"
 
 #
 # Functions.
@@ -140,9 +146,9 @@ do
   DATETIME=`date +"%Y-%m-%d %H:%M:%S"`
 
   echo "
-$DATETIME: ping -c 1 $DOMAINTOPING -t $PINGMAXIMUMSECONDS -v:"
+$DATETIME: ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v:"
 
-  if ping -c 1 "$DOMAINTOPING" -t 10 -v &> /dev/null
+  if ping -c 1 "$DOMAINTOPING" -W $PINGMAXIMUMSECONDS -v &> /dev/null
   then
     echo "OK"
 
@@ -197,10 +203,10 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Do reboot. Turn relay off on pin $GPIOPIN.
         echo "Router off..."
-        echo "1" > "/sys/class/gpio/gpio${GPIOPIN}/value"
+        python "$SCRIPTPATH/power_off.py"
 
         echo "Waiting $POWEROFFSECONDS..."
-        sleep "${POWEROFFSECONDS}-1"
+        sleep $((POWEROFFSECONDS - 1))
 
         # Beep twice.
         tput bel
@@ -209,7 +215,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Turn back on...
         echo "Router on..."
-        echo "0" > "/sys/class/gpio/gpio${GPIOPIN}/value"
+        python "$SCRIPTPATH/power_on.py"
 
         # Sleep for 60 seconds while the router restarts...
         echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..."
