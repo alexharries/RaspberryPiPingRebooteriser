@@ -194,7 +194,7 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
     createfailedpingcountfile "$FAILEDPINGCOUNT"
 
     getcurrentdatetime
-    echo "$DATETIME ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v - not ok: failed ping count: $FAILEDPINGCOUNT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+    echo "$DATETIME ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v - not ok: failed ping count: $FAILEDPINGCOUNT - threshold  $PINGFAILURECOUNTBEFOREREBOOT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
@@ -203,9 +203,6 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
 the threshold of $PINGFAILURECOUNTBEFOREREBOOT - \
 rebooting if the last reboot wasn't within the last \
 $PINGDONOTREBOOTWITHINSECONDS seconds."
-
-      getcurrentdatetime
-      echo "$DATETIME Failed ping count $FAILEDPINGCOUNT greater than reboot threshold $PINGFAILURECOUNTBEFOREREBOOT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
       # Read in $TEMPDIR/$LASTREBOOTTIMEFILENAME and subtract now timestamp from
       # the timestamp in that file.
@@ -220,7 +217,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
         echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
 
         getcurrentdatetime
-        echo "$DATETIME Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+        echo "$DATETIME Last reboot more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
         # Reset failed ping counter to 0.
         createfailedpingcountfile 0
