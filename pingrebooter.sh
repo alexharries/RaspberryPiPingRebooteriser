@@ -56,6 +56,12 @@ FAILEDPINGCOUNTFILENAME="failedpingcount.txt"
 # The file which contains the timestamp of the last reboot time.
 LASTREBOOTTIMEFILENAME="lastreboottime.txt"
 
+# The logs directory.
+LOGSDIRECTORY="/var/log/pingrebooter/"
+
+# The log file name.
+LOGFILENAME="log.txt"
+
 # A reliable domain which we will ping.
 DOMAINTOPING="8.8.8.8"
 
@@ -83,7 +89,7 @@ GPIOPIN=9
 
 # Get the path to the script.
 SCRIPT=`realpath $0`
-SCRIPTPATH=`dirname $SCRIPT`
+SCRIPTPATH=`dirname "$SCRIPT"`
 
 python "$SCRIPTPATH/power_on.py"
 
@@ -93,7 +99,12 @@ python "$SCRIPTPATH/power_on.py"
 
 # Get the current Unix timestamp.
 getcurrenttimestamp() {
-  TIMESTAMP=`date "+%s"`
+  DATETIME=`date "+%s"`
+}
+
+# Get the current date-time.
+getcurrentdatetime() {
+  DATETIME=`date +"%Y-%m-%d %H:%M:%S"`
 }
 
 # Create the last rebooted file.
@@ -108,6 +119,14 @@ createlastrebootedfile() {
   # immediately if needed.
   TIMESTAMP=$((TIMESTAMP - PINGDONOTREBOOTWITHINSECONDS))
   echo "$TIMESTAMP" > "$TEMPDIR/$LASTREBOOTTIMEFILENAME"
+}
+
+# Create the log file.
+createlogfile() {
+  mkdir -p /var/log/pingrebooter/
+  touch /var/log/pingrebooter/log.txt
+  getcurrentdatetime
+  echo "$DATETIME Startup." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 }
 
 #
@@ -143,7 +162,7 @@ fi
 while true
 do
   # Get date-time.
-  DATETIME=`date +"%Y-%m-%d %H:%M:%S"`
+  getcurrentdatetime
 
   echo "
 $DATETIME: ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v:"
@@ -172,6 +191,9 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
 
     createfailedpingcountfile "$FAILEDPINGCOUNT"
 
+    getcurrentdatetime
+    echo "$DATETIME ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v - not ok: failed ping count: $FAILEDPINGCOUNT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
     if (( "$FAILEDPINGCOUNT" >= "$PINGFAILURECOUNTBEFOREREBOOT" )); then
@@ -179,6 +201,9 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
 the threshold of $PINGFAILURECOUNTBEFOREREBOOT - \
 rebooting if the last reboot wasn't within the last \
 $PINGDONOTREBOOTWITHINSECONDS seconds."
+
+      getcurrentdatetime
+      echo "$DATETIME Failed ping count $FAILEDPINGCOUNT greater than reboot threshold $PINGFAILURECOUNTBEFOREREBOOT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
       # Read in $TEMPDIR/$LASTREBOOTTIMEFILENAME and subtract now timestamp from
       # the timestamp in that file.
@@ -192,6 +217,9 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
       if (( "$LASTREBOOTSECONDSAGO" > "$PINGDONOTREBOOTWITHINSECONDS" )); then
         echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
 
+        getcurrentdatetime
+        echo "$DATETIME Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+
         # Reset failed ping counter to 0.
         createfailedpingcountfile 0
 
@@ -203,9 +231,17 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Do reboot. Turn relay off on pin $GPIOPIN.
         echo "Router off..."
+
+        getcurrentdatetime
+        echo "$DATETIME Router off..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+
         python "$SCRIPTPATH/power_off.py"
 
         echo "Waiting $POWEROFFSECONDS..."
+
+        getcurrentdatetime
+        echo "Waiting $POWEROFFSECONDS..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+
         sleep $((POWEROFFSECONDS - 1))
 
         # Beep twice.
@@ -215,10 +251,18 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
         # Turn back on...
         echo "Router on..."
+
+        getcurrentdatetime
+        echo "Router on..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+
         python "$SCRIPTPATH/power_on.py"
 
         # Sleep for 60 seconds while the router restarts...
         echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..."
+
+        getcurrentdatetime
+        echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+
         sleep "$ROUTERREBOOTSECONDS"
       fi
     fi
