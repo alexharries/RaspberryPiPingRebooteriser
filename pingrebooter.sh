@@ -194,7 +194,7 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
     createfailedpingcountfile "$FAILEDPINGCOUNT"
 
     getcurrentdatetime
-    echo "$DATETIME ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v - not ok: failed ping count: $FAILEDPINGCOUNT - threshold  $PINGFAILURECOUNTBEFOREREBOOT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+    echo "$DATETIME ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v - not ok: failed ping count: $FAILEDPINGCOUNT - threshold $PINGFAILURECOUNTBEFOREREBOOT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
