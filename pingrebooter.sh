@@ -133,6 +133,8 @@ createlogfile() {
 # Initialise.
 #
 
+createlogfile
+
 # Touch the files this script uses and confirm they exist; if they
 # don't, exit with an error.
 mkdir -p "$TEMPDIR" || { echo "PingRebooter could not create temporary directory $TEMPDIR; exiting."; exit 1; }
