@@ -198,7 +198,7 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
 
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
-    if (( "$FAILEDPINGCOUNT" >= "$PINGFAILURECOUNTBEFOREREBOOT" )); then
+    if (( "$FAILEDPINGCOUNT" -ge "$PINGFAILURECOUNTBEFOREREBOOT" )); then
       echo "Failed ping count $FAILEDPINGCOUNT is greater than \
 the threshold of $PINGFAILURECOUNTBEFOREREBOOT - \
 rebooting if the last reboot wasn't within the last \
@@ -213,7 +213,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
 
       echo "Last reboot timestamp: $LASTREBOOTTIME - $LASTREBOOTSECONDSAGO seconds ago"
 
-      if (( "$LASTREBOOTSECONDSAGO" > "$PINGDONOTREBOOTWITHINSECONDS" )); then
+      if (( "$LASTREBOOTSECONDSAGO" -ge "$PINGDONOTREBOOTWITHINSECONDS" )); then
         echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
 
         getcurrentdatetime
