@@ -81,7 +81,7 @@ PINGDONOTREBOOTWITHINSECONDS=900
 POWEROFFSECONDS=10
 
 # Wait how many seconds for the router to reboot.
-ROUTERREBOOTSECONDS=60
+ROUTERREBOOTSECONDS=180
 
 # Set the GPIO pin number which is connected to the relay.
 # @see https://medium.com/coinmonks/controlling-raspberry-pi-gpio-pins-from-bash-scripts-traffic-lights-7ea0057c6a90
@@ -194,7 +194,7 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
     createfailedpingcountfile "$FAILEDPINGCOUNT"
 
     getcurrentdatetime
-    echo "$DATETIME ping -c 1 $DOMAINTOPING -W $PINGMAXIMUMSECONDS -v - not ok: failed ping count: $FAILEDPINGCOUNT - threshold $PINGFAILURECOUNTBEFOREREBOOT" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+    echo "$DATETIME ping $DOMAINTOPING timeout - $FAILEDPINGCOUNT of $PINGFAILURECOUNTBEFOREREBOOT before reboot" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
@@ -217,7 +217,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
         echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
 
         getcurrentdatetime
-        echo "$DATETIME Last reboot more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+        echo "$DATETIME Rebooting: last reboot at least $PINGDONOTREBOOTWITHINSECONDS seconds ago..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
         # Reset failed ping counter to 0.
         createfailedpingcountfile 0
@@ -239,7 +239,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
         echo "Waiting $POWEROFFSECONDS..."
 
         getcurrentdatetime
-        echo "Waiting $POWEROFFSECONDS..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+        echo "$DATETIME Waiting $POWEROFFSECONDS..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
         sleep $((POWEROFFSECONDS - 1))
 
@@ -252,7 +252,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
         echo "Router on..."
 
         getcurrentdatetime
-        echo "Router on..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+        echo "$DATETIME Router on..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
         python "$SCRIPTPATH/power_on.py"
 
@@ -260,7 +260,7 @@ $PINGDONOTREBOOTWITHINSECONDS seconds."
         echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..."
 
         getcurrentdatetime
-        echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+        echo "$DATETIME Waiting $ROUTERREBOOTSECONDS seconds while router reboots..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
         sleep "$ROUTERREBOOTSECONDS"
       fi
