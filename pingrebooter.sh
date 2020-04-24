@@ -99,7 +99,7 @@ python "$SCRIPTPATH/power_on.py"
 
 # Get the current Unix timestamp.
 getcurrenttimestamp() {
-  DATETIME=`date "+%s"`
+  TIMESTAMP=`date "+%s"`
 }
 
 # Get the current date-time.
@@ -114,11 +114,9 @@ createfailedpingcountfile() {
 
 # Create the last rebooted file.
 createlastrebootedfile() {
-  getcurrenttimestamp
   # Set last reboot time to the interval seconds ago so we can reboot
   # immediately if needed.
-  TIMESTAMP=$((TIMESTAMP - PINGDONOTREBOOTWITHINSECONDS))
-  echo "$TIMESTAMP" > "$TEMPDIR/$LASTREBOOTTIMEFILENAME"
+  echo "0" > "$TEMPDIR/$LASTREBOOTTIMEFILENAME"
 }
 
 # Create the log file.
@@ -196,24 +194,33 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
     getcurrentdatetime
     echo "$DATETIME ping $DOMAINTOPING timeout - $FAILEDPINGCOUNT of $PINGFAILURECOUNTBEFOREREBOOT before reboot" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
+    echo "FAILEDPINGCOUNT: $FAILEDPINGCOUNT > PINGFAILURECOUNTBEFOREREBOOT: $PINGFAILURECOUNTBEFOREREBOOT?" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+    if [[ "$FAILEDPINGCOUNT" -ge "$PINGFAILURECOUNTBEFOREREBOOT" ]]; then
+      echo "Yes" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+#    else
+#      echo "No" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+#    fi
+
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
-    if [ $FAILEDPINGCOUNT -ge $PINGFAILURECOUNTBEFOREREBOOT ]; then
-      echo "Failed ping count $FAILEDPINGCOUNT is greater than \
-the threshold of $PINGFAILURECOUNTBEFOREREBOOT - \
-rebooting if the last reboot wasn't within the last \
-$PINGDONOTREBOOTWITHINSECONDS seconds."
+#    if [[ "$FAILEDPINGCOUNT" -ge "$PINGFAILURECOUNTBEFOREREBOOT" ]]; then
+#      echo "Failed ping count $FAILEDPINGCOUNT is greater than \
+#the threshold of $PINGFAILURECOUNTBEFOREREBOOT - \
+#rebooting if the last reboot wasn't within the last \
+#$PINGDONOTREBOOTWITHINSECONDS seconds."
 
       # Read in $TEMPDIR/$LASTREBOOTTIMEFILENAME and subtract now timestamp from
       # the timestamp in that file.
       LASTREBOOTTIME=`cat "$TEMPDIR/$LASTREBOOTTIMEFILENAME"`
 
       getcurrenttimestamp
-      LASTREBOOTSECONDSAGO=$((TIMESTAMP-LASTREBOOTTIME))
+      let LASTREBOOTSECONDSAGO="$TIMESTAMP-$LASTREBOOTTIME"
+      #let LASTREBOOTSECONDSAGO="$TIMESTAMP-$TIMEDIFFERENCE"
 
-      echo "Last reboot timestamp: $LASTREBOOTTIME - $LASTREBOOTSECONDSAGO seconds ago"
+      echo "$DATETIME Last reboot timestamp: $LASTREBOOTTIME - $LASTREBOOTSECONDSAGO seconds ago" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+      echo "$DATETIME LASTREBOOTTIME $LASTREBOOTTIME - PINGDONOTREBOOTWITHINSECONDS: $PINGDONOTREBOOTWITHINSECONDS" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
-      if [ $LASTREBOOTSECONDSAGO -ge $PINGDONOTREBOOTWITHINSECONDS ]; then
+      if [[ "$LASTREBOOTSECONDSAGO" -ge "$PINGDONOTREBOOTWITHINSECONDS" ]]; then
         echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
 
         getcurrentdatetime
