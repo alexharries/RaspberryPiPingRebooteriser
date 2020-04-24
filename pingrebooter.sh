@@ -194,28 +194,15 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
     getcurrentdatetime
     echo "$DATETIME ping $DOMAINTOPING timeout - $FAILEDPINGCOUNT of $PINGFAILURECOUNTBEFOREREBOOT before reboot" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
-    echo "FAILEDPINGCOUNT: $FAILEDPINGCOUNT > PINGFAILURECOUNTBEFOREREBOOT: $PINGFAILURECOUNTBEFOREREBOOT?" >> "${LOGSDIRECTORY}${LOGFILENAME}"
-    if [[ "$FAILEDPINGCOUNT" -ge "$PINGFAILURECOUNTBEFOREREBOOT" ]]; then
-      echo "Yes" >> "${LOGSDIRECTORY}${LOGFILENAME}"
-#    else
-#      echo "No" >> "${LOGSDIRECTORY}${LOGFILENAME}"
-#    fi
-
     # If failed ping count > number of failed pings before reboot, and last
     # reboot was more than PINGDONOTREBOOTWITHINSECONDS ago, reboot the router.
-#    if [[ "$FAILEDPINGCOUNT" -ge "$PINGFAILURECOUNTBEFOREREBOOT" ]]; then
-#      echo "Failed ping count $FAILEDPINGCOUNT is greater than \
-#the threshold of $PINGFAILURECOUNTBEFOREREBOOT - \
-#rebooting if the last reboot wasn't within the last \
-#$PINGDONOTREBOOTWITHINSECONDS seconds."
-
+    if [[ "$FAILEDPINGCOUNT" -ge "$PINGFAILURECOUNTBEFOREREBOOT" ]]; then
       # Read in $TEMPDIR/$LASTREBOOTTIMEFILENAME and subtract now timestamp from
       # the timestamp in that file.
       LASTREBOOTTIME=`cat "$TEMPDIR/$LASTREBOOTTIMEFILENAME"`
 
       getcurrenttimestamp
       let LASTREBOOTSECONDSAGO="$TIMESTAMP-$LASTREBOOTTIME"
-      #let LASTREBOOTSECONDSAGO="$TIMESTAMP-$TIMEDIFFERENCE"
 
       echo "$DATETIME Last reboot timestamp: $LASTREBOOTTIME - $LASTREBOOTSECONDSAGO seconds ago" >> "${LOGSDIRECTORY}${LOGFILENAME}"
       echo "$DATETIME LASTREBOOTTIME $LASTREBOOTTIME - PINGDONOTREBOOTWITHINSECONDS: $PINGDONOTREBOOTWITHINSECONDS" >> "${LOGSDIRECTORY}${LOGFILENAME}"
