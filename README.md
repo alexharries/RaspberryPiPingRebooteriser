@@ -1,7 +1,27 @@
 # RaspberryPiPingRebooteriser
-This script written for the Raspberry Pi resets a device when the internet connection is lost for a period of time.
 
-It does the following:
+This script written for the Raspberry Pi can be used to power-cycle mains-connected devices when the internet connection is lost for a period of time.
+
+This requires the addition of a Raspberry Pi relay board, and you will need to wire the switched side of the relays to switch mains electricity; for example, I have wired mine to interrupt the supply to a standard UK four-way extension lead.
+
+Also, because this script is written by someone with a terrible track record for writing awful shell scripts (hey, that's me!) you would be well-advised to run away from this code very quickly... 
+
+## Obligatory scary electrical warning
+
+Obviously, because this involves working with mains electricity, it is DANGEROUS and you must either ensure you are competent to take this work on, or enlist the help of an electrician.
+
+Your primary considerations are:
+
+* The mains-voltage and electronics-voltage (5V) sides of the relay circuitry are double-insulated from each other
+* Mains conductors must be suitably insulated from each other
+* Strain relief is necessary on the mains cables
+* A suitable, impact-proof enclosure for your Raspberry Pi and relay board are needed
+* You must take steps to ensure the relays aren't overloaded - e.g. with suitable signage and an appropriate fuse in your plug, if you use fused plugs where you are, and
+* Your wiring meets the local standards or laws wherever you are.
+
+## Yerbut, what does it do?
+
+This script does the following:
 
 - Every six seconds, it pings www.google.co.uk
 
