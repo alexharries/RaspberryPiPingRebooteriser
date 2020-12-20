@@ -53,6 +53,10 @@ TEMPDIR="/tmp/pingrebooter"
 # The file which contains the count of how many failed tests we've had in a row.
 FAILEDPINGCOUNTFILENAME="failedpingcount.txt"
 
+# The file which disables rebooting - touch this file to prevent pingrebooter
+# rebooting devices e.g. when diagnosing a problem.
+PINGREBOOTERDISABLEFILENAME="pingrebooterdisable.txt"
+
 # The file which contains the timestamp of the last reboot time.
 LASTREBOOTTIMEFILENAME="lastreboottime.txt"
 
@@ -63,7 +67,10 @@ LOGSDIRECTORY="/var/log/pingrebooter/"
 LOGFILENAME="log.txt"
 
 # A reliable domain which we will ping.
-DOMAINTOPING="8.8.8.8"
+# We want to use a domain name here because it will help us spot
+# DNS failures, but this seems to be unreliable right now.
+DOMAINTOPING="www.google.co.uk"
+#DOMAINTOPING="8.8.8.8"
 
 # How frequently should we send pings.
 PINGINTERVALSECONDS=6
@@ -116,7 +123,7 @@ createfailedpingcountfile() {
 createlastrebootedfile() {
   # Set last reboot time to the interval seconds ago so we can reboot
   # immediately if needed.
-  echo "0" > "$TEMPDIR/$LASTREBOOTTIMEFILENAME"
+  echo "$1" > "$TEMPDIR/$LASTREBOOTTIMEFILENAME"
 }
 
 # Create the log file.
@@ -147,7 +154,7 @@ if [[ ! -f "$TEMPDIR/$FAILEDPINGCOUNTFILENAME" ]]; then
 fi
 
 if [[ ! -f "$TEMPDIR/$LASTREBOOTTIMEFILENAME" ]]; then
-  createlastrebootedfile
+  createlastrebootedfile 0
 fi
 
 if [[ ! -f "$TEMPDIR/$LASTREBOOTTIMEFILENAME" ]]; then
@@ -202,22 +209,31 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
       LASTREBOOTTIME=`cat "$TEMPDIR/$LASTREBOOTTIMEFILENAME"`
 
       getcurrenttimestamp
-      let LASTREBOOTSECONDSAGO="$TIMESTAMP-$LASTREBOOTTIME"
 
-      echo "$DATETIME Last reboot timestamp: $LASTREBOOTTIME - $LASTREBOOTSECONDSAGO seconds ago" >> "${LOGSDIRECTORY}${LOGFILENAME}"
+      # Declare our timestamps as integers so we do mathumaticks.
+      LASTREBOOTSECONDSAGO=0
+
+      declare -i TIMESTAMP
+      declare -i LASTREBOOTTIME
+      declare -i LASTREBOOTSECONDSAGO
+
+      LASTREBOOTSECONDSAGO="$TIMESTAMP-$LASTREBOOTTIME"
+
+      echo "$DATETIME Last reboot timestamp: $LASTREBOOTTIME = $LASTREBOOTSECONDSAGO seconds ago" >> "${LOGSDIRECTORY}${LOGFILENAME}"
       echo "$DATETIME LASTREBOOTTIME $LASTREBOOTTIME - PINGDONOTREBOOTWITHINSECONDS: $PINGDONOTREBOOTWITHINSECONDS" >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
       if [[ "$LASTREBOOTSECONDSAGO" -ge "$PINGDONOTREBOOTWITHINSECONDS" ]]; then
-        echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router..."
+        echo "Last reboot was more than $PINGDONOTREBOOTWITHINSECONDS seconds ago; rebooting router (if $TEMPDIR/$PINGREBOOTERDISABLEFILENAME doesn't exist) ..."
 
         getcurrentdatetime
-        echo "$DATETIME Rebooting: last reboot at least $PINGDONOTREBOOTWITHINSECONDS seconds ago..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+
+        echo "$DATETIME Rebooting : last reboot at least $PINGDONOTREBOOTWITHINSECONDS seconds ago (touch $TEMPDIR/$PINGREBOOTERDISABLEFILENAME if you wish to disable rebooting)..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
         # Reset failed ping counter to 0.
         createfailedpingcountfile 0
 
         # Set last reboot timestamp to now.
-        createlastrebootedfile
+        createlastrebootedfile "$DATETIME"
 
         # Beep once.
         tput bel
@@ -228,7 +244,11 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
         getcurrentdatetime
         echo "$DATETIME Router off..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
-        python "$SCRIPTPATH/power_off.py"
+        if [[ -f "$TEMPDIR/$PINGREBOOTERDISABLEFILENAME" ]]; then
+          echo "$DATETIME Not rebooting because $TEMPDIR/$PINGREBOOTERDISABLEFILENAME exists - please delete this file to enable rebooting." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+        else
+          python "$SCRIPTPATH/power_off.py"
+        fi
 
         echo "Waiting $POWEROFFSECONDS..."
 
@@ -248,7 +268,11 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
         getcurrentdatetime
         echo "$DATETIME Router on..." >> "${LOGSDIRECTORY}${LOGFILENAME}"
 
-        python "$SCRIPTPATH/power_on.py"
+        if [[ -f "$TEMPDIR/$PINGREBOOTERDISABLEFILENAME" ]]; then
+          echo "$DATETIME Not rebooting because $TEMPDIR/$PINGREBOOTERDISABLEFILENAME exists - please delete this file to enable rebooting." >> "${LOGSDIRECTORY}${LOGFILENAME}"
+        else
+          python "$SCRIPTPATH/power_on.py"
+        fi
 
         # Sleep for 60 seconds while the router restarts...
         echo "Waiting $ROUTERREBOOTSECONDS seconds while router reboots..."
