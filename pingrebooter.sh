@@ -233,7 +233,7 @@ Not ok: Failed ping count: $FAILEDPINGCOUNT
         createfailedpingcountfile 0
 
         # Set last reboot timestamp to now.
-        createlastrebootedfile "$DATETIME"
+        createlastrebootedfile "$TIMESTAMP"
 
         # Beep once.
         tput bel
